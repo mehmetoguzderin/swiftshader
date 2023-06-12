@@ -34,6 +34,9 @@ __pragma(warning(push))
 #	include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #endif
 #include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include "llvm/ExecutionEngine/Orc/Shared/ObjectFormats.h"
+#include "llvm/ExecutionEngine/Orc/Shared/ExecutorAddress.h"
+#include "llvm/ExecutionEngine/Orc/Shared/ExecutorSymbolDef.h"
 #include "llvm/IR/DiagnosticInfo.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/CommandLine.h"
@@ -646,8 +649,8 @@ class ExternalSymbolGenerator : public llvm::orc::JITDylib::DefinitionGenerator
 			auto it = resolver.functions.find(unmangled.str());
 			if(it != resolver.functions.end())
 			{
-				symbols[name] = llvm::JITEvaluatedSymbol(
-				    static_cast<llvm::JITTargetAddress>(reinterpret_cast<uintptr_t>(it->second)),
+				symbols[name] = llvm::orc::ExecutorSymbolDef(
+				    static_cast<llvm::orc::ExecutorAddr>(reinterpret_cast<uintptr_t>(it->second)),
 				    llvm::JITSymbolFlags::Exported);
 
 				continue;
@@ -664,8 +667,8 @@ class ExternalSymbolGenerator : public llvm::orc::JITDylib::DefinitionGenerator
 
 			if(address)
 			{
-				symbols[name] = llvm::JITEvaluatedSymbol(
-				    static_cast<llvm::JITTargetAddress>(reinterpret_cast<uintptr_t>(address)),
+				symbols[name] = llvm::orc::ExecutorSymbolDef(
+				    static_cast<llvm::orc::ExecutorAddr>(reinterpret_cast<uintptr_t>(address)),
 				    llvm::JITSymbolFlags::Exported);
 
 				continue;
@@ -849,7 +852,7 @@ public:
 			}
 			else  // Successful compilation
 			{
-				addresses[i] = reinterpret_cast<void *>(static_cast<intptr_t>(symbol->getAddress()));
+				addresses[i] = reinterpret_cast<void *>(static_cast<intptr_t>(symbol->getAddress().getValue()));
 			}
 		}
 

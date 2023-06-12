@@ -482,9 +482,11 @@ set(LLVM_LIST
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/EHFrameSupport.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELFLinkGraphBuilder.cpp
+    ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF_aarch32.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF_aarch64.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF_i386.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF_loongarch.cpp
+    ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF_ppc64.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF_riscv.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ELF_x86_64.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/JITLink.cpp
@@ -494,9 +496,11 @@ set(LLVM_LIST
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/MachOLinkGraphBuilder.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/MachO_arm64.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/MachO_x86_64.cpp
+    ${LLVM_DIR}/lib/ExecutionEngine/JITLink/aarch32.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/aarch64.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/i386.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/loongarch.cpp
+    ${LLVM_DIR}/lib/ExecutionEngine/JITLink/ppc64.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/riscv.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/JITLink/x86_64.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/Orc/CompileUtils.cpp
@@ -514,6 +518,7 @@ set(LLVM_LIST
     ${LLVM_DIR}/lib/ExecutionEngine/Orc/ObjectLinkingLayer.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/Orc/Shared/AllocationActions.cpp
+    ${LLVM_DIR}/lib/ExecutionEngine/Orc/Shared/ObjectFormats.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/Orc/Shared/OrcError.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/Orc/TargetProcess/RegisterEHFrames.cpp
     ${LLVM_DIR}/lib/ExecutionEngine/Orc/TargetProcess/TargetExecutionUtils.cpp
