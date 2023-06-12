@@ -27,7 +27,6 @@
 #include <cstring>
 #include <limits>
 #include <new>
-#include <type_traits>
 #include <utility>
 
 DEMANGLE_NAMESPACE_BEGIN
