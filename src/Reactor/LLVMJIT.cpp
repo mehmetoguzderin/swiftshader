@@ -247,7 +247,9 @@ JITGlobals *JITGlobals::get()
 		jitTargetMachineBuilder.getFeatures().AddFeature("+f");
 		jitTargetMachineBuilder.getFeatures().AddFeature("+d");
 		jitTargetMachineBuilder.getFeatures().AddFeature("+c");
+#ifdef ENABLE_RR_RVV
 		jitTargetMachineBuilder.getFeatures().AddFeature("+v");
+#endif
 		jitTargetMachineBuilder.setCodeModel(llvm::CodeModel::Large);
 #elif LLVM_VERSION_MAJOR >= 11 /* TODO(b/165000222): Unconditional after LLVM 11 upgrade */
 		jitTargetMachineBuilder.setCPU(std::string(llvm::sys::getHostCPUName()));
