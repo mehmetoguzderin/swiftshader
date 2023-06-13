@@ -32,7 +32,8 @@ struct PragmaState
 {
 	bool memorySanitizerInstrumentation = true;
 	bool initializeLocalVariables = false;
-	int optimizationLevel = 2;  // Default
+	// int optimizationLevel = 2;  // Default
+	int optimizationLevel = 3;  // Default
 };
 
 // The initialization of static thread-local data is not observed by MemorySanitizer

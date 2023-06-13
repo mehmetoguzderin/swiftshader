@@ -43,10 +43,21 @@ __pragma(warning(push))
 #include "llvm/Support/Host.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/Vectorize/LoadStoreVectorizer.h"
+#include "llvm/Transforms/Vectorize/LoopVectorize.h"
+#include "llvm/Transforms/Vectorize/SLPVectorizer.h"
+#include "llvm/Transforms/Vectorize/VectorCombine.h"
+#include "llvm/Transforms/Vectorize.h"
 #include "llvm/Transforms/Instrumentation/AddressSanitizer.h"
 #include "llvm/Transforms/Instrumentation/MemorySanitizer.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
+#include "llvm/Transforms/Scalar/LoopUnrollAndJamPass.h"
+#include "llvm/Transforms/Scalar/LoopUnrollPass.h"
+#include "llvm/Transforms/Scalar/CorrelatedValuePropagation.h"
+#include "llvm/Transforms/Scalar/BDCE.h"
+#include "llvm/Transforms/Scalar/SimpleLoopUnswitch.h"
+#include "llvm/Transforms/Scalar/AlignmentFromAssumptions.h"
 
 #if LLVM_VERSION_MAJOR >= 13  // New pass manager
 #	include "llvm/IR/PassManager.h"
@@ -236,9 +247,11 @@ JITGlobals *JITGlobals::get()
 		jitTargetMachineBuilder.getFeatures().AddFeature("+f");
 		jitTargetMachineBuilder.getFeatures().AddFeature("+d");
 		jitTargetMachineBuilder.getFeatures().AddFeature("+c");
-		jitTargetMachineBuilder.setCodeModel(llvm::CodeModel::Medium);
+		jitTargetMachineBuilder.getFeatures().AddFeature("+v");
+		jitTargetMachineBuilder.setCodeModel(llvm::CodeModel::Large);
 #elif LLVM_VERSION_MAJOR >= 11 /* TODO(b/165000222): Unconditional after LLVM 11 upgrade */
 		jitTargetMachineBuilder.setCPU(std::string(llvm::sys::getHostCPUName()));
+		jitTargetMachineBuilder.getFeatures().AddFeature("+avx2");
 #else
 		jitTargetMachineBuilder.setCPU(llvm::sys::getHostCPUName());
 #endif
@@ -940,12 +953,58 @@ void JITBuilder::runPasses()
 	if(coroutine.id)
 	{
 		// Adds mandatory coroutine transforms.
-		pm = pb.buildO0DefaultPipeline(llvm::OptimizationLevel::O0);
+		// pm = pb.buildO0DefaultPipeline(llvm::OptimizationLevel::O0);
+		pm = pb.buildO0DefaultPipeline(llvm::OptimizationLevel::O3);
 	}
 
 	if(optimizationLevel > 0)
 	{
 		fpm.addPass(llvm::SROAPass(llvm::SROAOptions::PreserveCFG));
+		fpm.addPass(llvm::InstCombinePass());
+
+		// fpm.addPass(llvm::LoadStoreVectorizerPass());
+		
+		fpm.addPass(llvm::LoopVectorizePass());
+
+		fpm.addPass(llvm::createFunctionToLoopPassAdaptor(
+			llvm::LoopUnrollAndJamPass()));
+		fpm.addPass(llvm::LoopUnrollPass());
+		fpm.addPass(llvm::SROAPass(llvm::SROAOptions::PreserveCFG));
+		
+		fpm.addPass(llvm::InstCombinePass());
+
+		llvm::ExtraVectorPassManager ExtraPasses;
+		ExtraPasses.addPass(llvm::EarlyCSEPass());
+		ExtraPasses.addPass(llvm::CorrelatedValuePropagationPass());
+		ExtraPasses.addPass(llvm::InstCombinePass());
+		llvm::LoopPassManager LPM;
+		LPM.addPass(llvm::SimpleLoopUnswitchPass(true));
+		ExtraPasses.addPass(llvm::
+			createFunctionToLoopPassAdaptor(std::move(LPM), true, true));
+		ExtraPasses.addPass(llvm::
+			SimplifyCFGPass(llvm::SimplifyCFGOptions().convertSwitchRangeToICmp(true)));
+		ExtraPasses.addPass(llvm::InstCombinePass());
+		fpm.addPass(std::move(ExtraPasses));
+
+		fpm.addPass(llvm::SimplifyCFGPass(llvm::SimplifyCFGOptions()
+										.forwardSwitchCondToPhi(true)
+										.convertSwitchRangeToICmp(true)
+										.convertSwitchToLookupTable(true)
+										.needCanonicalLoops(false)
+										.hoistCommonInsts(true)
+										.sinkCommonInsts(true)));
+
+		fpm.addPass(llvm::SCCPPass());
+		fpm.addPass(llvm::InstCombinePass());
+		fpm.addPass(llvm::BDCEPass());
+
+		fpm.addPass(llvm::SLPVectorizerPass());
+		fpm.addPass(llvm::EarlyCSEPass());
+			
+		fpm.addPass(llvm::VectorCombinePass());
+
+		fpm.addPass(llvm::AlignmentFromAssumptionsPass());
+
 		fpm.addPass(llvm::InstCombinePass());
 	}
 

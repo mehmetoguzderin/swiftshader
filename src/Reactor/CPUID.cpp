@@ -49,6 +49,7 @@ static void cpuid(int eax_ebx_ecx_edx[4], int eax, int ecx = 0)
 
 bool CPUID::supportsSSE4_1()
 {
+	return false;
 	int eax_ebx_ecx_edx[4];
 	cpuid(eax_ebx_ecx_edx, 1);
 	return (eax_ebx_ecx_edx[2] & 0x00080000) != 0;
@@ -56,6 +57,7 @@ bool CPUID::supportsSSE4_1()
 
 bool CPUID::supportsAVX2()
 {
+	return false;
 	int eax_ebx_ecx_edx[4];
 	cpuid(eax_ebx_ecx_edx, 1);
 	// Test bits 12 (FMA), 27 (OSXSAVE), and 28 (AVX) of ECX
