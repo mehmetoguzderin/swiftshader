@@ -574,11 +574,12 @@ std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name)
 
 		jit->runPasses();
 
-		if(false)
+		if(getenv("REACTOR_DUMP_OPTIMIZED_IR") != nullptr)
 		{
 			std::error_code error;
 			llvm::raw_fd_ostream file(std::string(name) + "-llvm-dump-opt.txt", error);
 			jit->module->print(file, 0);
+			jit->module->print(llvm::outs(), 0);
 		}
 
 		routine = jit->acquireRoutine(name, &jit->function, 1);
